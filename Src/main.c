@@ -91,11 +91,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-/* 타이머 콜백함수, 이곳에 필요한 타이머 인터럽트를 작성. */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-
-}
 
 /* 외부인터럽트 콜백함수, 이곳에 필요한 외부 인터럽트를 작성. */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
