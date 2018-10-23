@@ -16,9 +16,39 @@
  */
 //////////////////////////////////////////////////////////////
 
-void Step_Motor(const uint8_t Motor_Select, const uint8_t Direction, uint32_t Motor_PWM)
+void Step_Motor_Control(const uint8_t Motor_Select, const uint8_t Direction, uint32_t Motor_Speed, uint8_t Motor_Stop)
 {
 
+	switch(Motor_Select)
+	{
+	case MOTOR_LEFT:
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, Direction);	//	시계, 시계반대 방향 제어.
+		TIM1->ARR = Motor_Speed;							//	값을  Auto-Reload Register에 전달.
+		TIM1->CCR1 = TIM1->ARR/2;							//	듀티비 50%를 유지.
+		if(Motor_Stop == NO_MOVE)
+		{
+			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+		}
+		else
+		{
+			//__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 100);
+		}
+		break;
+
+	case MOTOR_RIGHT:
+		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3, Direction);
+		TIM1->ARR = Motor_Speed;
+		TIM1->CCR2 = TIM1->ARR/2;
+		if(Motor_Stop == NO_MOVE)
+		{
+			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+		}
+		else
+		{
+			//__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 100);
+		}
+		break;
+	}
 }
 
 //////////////////////////////////////////////////////////////
@@ -32,7 +62,7 @@ void Step_Motor(const uint8_t Motor_Select, const uint8_t Direction, uint32_t Mo
 
 void Watch_Dog(void)
 {
-	__HAL_IWDG_RELOAD_COUNTER(&hiwdg);   //  System이 Reset되지 않도록 지속적인 카운트한다. (0.5초이상되면 리셋)
+	//__HAL_IWDG_RELOAD_COUNTER(&hiwdg);   //  System이 Reset되지 않도록 지속적인 카운트한다. (0.5초이상되면 리셋)
 
 	// 시스템이 재부팅 되었는지 확인하는 함수.
 	if(RESET != __HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST))

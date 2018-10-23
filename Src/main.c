@@ -52,7 +52,8 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "lwj.h"
+#include "khy.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -604,11 +605,18 @@ void StartDefaultTask(void const * argument)
 {
 
   /* USER CODE BEGIN 5 */
-
+	int i = 90;			//	스텝모터 테스트.
+	int j = 160;
   /* Infinite loop */
   for(;;)
   {
-
+	  //	스텝모터 테스트중.
+	  for(int i = 90; i < 270; i++)
+	  {
+		 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,i, 0);
+		 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,i, 1);
+		 osDelay(50);
+	  }
   }
   /* USER CODE END 5 */ 
 }
