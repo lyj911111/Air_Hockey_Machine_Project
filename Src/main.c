@@ -71,10 +71,9 @@ osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 osThreadId ADCThreadHandle;
 /* Private variables ---------------------------------------------------------*/
-char uart_buf[20];
-int count=2;
-uint32_t adc_value;
-uint32_t map_value;
+char uart_buf[30];
+uint32_t adc1_value, adc2_value;
+uint32_t map1_value, map2_value;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -323,7 +322,7 @@ static void MX_ADC2_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Channel = ADC_CHANNEL_3;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
@@ -589,12 +588,18 @@ static void ADC_Thread(void const * argument)
 	{
 		HAL_ADC_Start(&hadc1);
 		HAL_ADC_PollForConversion(&hadc1,500);
-		adc_value= HAL_ADC_GetValue(&hadc1);
+		adc1_value= HAL_ADC_GetValue(&hadc1);
 		HAL_ADC_Stop(&hadc1);
 
+		HAL_ADC_Start(&hadc2);
+		HAL_ADC_PollForConversion(&hadc2,500);
+		adc2_value= HAL_ADC_GetValue(&hadc2);
+		HAL_ADC_Stop(&hadc2);
+
 		memset(uart_buf,0,sizeof(uart_buf));
-		map_value = math_Map(adc_value, 0, 4095, 0, 2047);
-		sprintf(uart_buf,"adc_map_value: %d\r\n", map_value);
+		map1_value = math_Map(adc1_value, 0, 4095, 0, 2047);
+		map2_value = math_Map(adc2_value, 0, 4095, 0, 2047);
+		sprintf(uart_buf,"adc_map_value: %d %d \r\n", map1_value, map2_value);
 		HAL_UART_Transmit_IT(&huart3,uart_buf,sizeof(uart_buf));
 		osDelay(100);
 	}
