@@ -342,9 +342,9 @@ static void MX_TIM1_Init(void)
   TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
 
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 10000;
+  htim1.Init.Prescaler = 1000;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 9000;
+  htim1.Init.Period = 450;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
@@ -360,7 +360,7 @@ static void MX_TIM1_Init(void)
   }
 
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = 225;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
@@ -376,6 +376,7 @@ static void MX_TIM1_Init(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
+  sConfigOC.Pulse = 0;
   if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
@@ -610,13 +611,40 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+
 	  //	스텝모터 테스트중.
-	  for(int i = 90; i < 270; i++)
-	  {
-		 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,i, 0);
-		 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,i, 1);
-		 osDelay(50);
-	  }
+	 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,230, 1);
+	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 0);
+	 osDelay(1000);
+
+	 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,230, 0);
+	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 0);
+	 osDelay(1000);
+
+	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 1);
+	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 0);
+	 osDelay(1000);
+
+	 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,230, 0);
+	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 0);
+	 osDelay(1000);
+
+	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
+	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 1);
+	 osDelay(1000);
+
+	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
+	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 0);
+	 osDelay(1000);
+
+	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
+	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 1);
+	 osDelay(1000);
+
+	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
+	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 0);
+	 osDelay(1000);
+
   }
   /* USER CODE END 5 */ 
 }
