@@ -67,13 +67,15 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart3;
 
 osThreadId defaultTaskHandle;
+osThreadId ControllerHandle;
 
 /* USER CODE BEGIN PV */
 osThreadId ADCThreadHandle;
 /* Private variables ---------------------------------------------------------*/
-char uart_buf[30];
-uint32_t adc1_value, adc2_value;
-uint32_t map1_value, map2_value;
+char uart_buf[100];
+int adc1_value, adc2_value;
+int VRx, VRy , map_speed, re_map_speed;
+int map_value_x, re_map_x, map_value_y, re_map_y;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -86,6 +88,7 @@ static void MX_TIM3_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_ADC2_Init(void);
 void StartDefaultTask(void const * argument);
+void Controller_Thread(void const * argument);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
                                 
@@ -162,6 +165,10 @@ int main(void)
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* definition and creation of Controller */
+  osThreadDef(Controller, Controller_Thread, osPriorityNormal, 0, 128);
+  ControllerHandle = osThreadCreate(osThread(Controller), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -597,9 +604,14 @@ static void ADC_Thread(void const * argument)
 		HAL_ADC_Stop(&hadc2);
 
 		memset(uart_buf,0,sizeof(uart_buf));
-		map1_value = math_Map(adc1_value, 0, 4095, 0, 2047);
-		map2_value = math_Map(adc2_value, 0, 4095, 0, 2047);
-		sprintf(uart_buf,"adc_map_value: %d %d \r\n", map1_value, map2_value);
+		VRx = math_Map(adc1_value, 0, 4095, 0, 2047);
+		VRy = math_Map(adc2_value, 0, 4095, 0, 2047);
+		osDelay(50);
+		map_value_x = math_Map(VRx, 0, 2047, 90, 270); // mapping test
+		re_map_x = reverse_map(map_value_x,270,90); //reverse map value
+		map_value_y = math_Map(VRy, 0, 2047, 90, 270); // mapping test
+		re_map_y = reverse_map(map_value_y,270,90); //reverse map value
+		sprintf(uart_buf,"[VRx: %d -> %d] [VRy: %d -> %d] \r\n", VRx, re_map_x, VRy, re_map_y);
 		HAL_UART_Transmit_IT(&huart3,uart_buf,sizeof(uart_buf));
 		osDelay(100);
 	}
@@ -618,40 +630,130 @@ void StartDefaultTask(void const * argument)
   {
 
 	  //	스텝모터 테스트중.
-	 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,230, 1);
-	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 0);
-	 osDelay(1000);
-
-	 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,230, 0);
-	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 0);
-	 osDelay(1000);
-
-	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 1);
-	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 0);
-	 osDelay(1000);
-
-	 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,230, 0);
-	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 0);
-	 osDelay(1000);
-
-	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
-	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 1);
-	 osDelay(1000);
-
-	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
-	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 0);
-	 osDelay(1000);
-
-	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
-	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 1);
-	 osDelay(1000);
-
-	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
-	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 0);
-	 osDelay(1000);
+//	 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,230, 1);
+//	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 0);
+//	 osDelay(1000);
+//
+//	 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,230, 0);
+//	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 0);
+//	 osDelay(1000);
+//
+//	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 1);
+//	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 0);
+//	 osDelay(1000);
+//
+//	 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,230, 0);
+//	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 0);
+//	 osDelay(1000);
+//
+//	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
+//	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 1);
+//	 osDelay(1000);
+//
+//	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
+//	 Step_Motor_Control(MOTOR_RIGHT,CNT_CLK_WISE ,230, 0);
+//	 osDelay(1000);
+//
+//	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
+//	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 1);
+//	 osDelay(1000);
+//
+//	 Step_Motor_Control(MOTOR_LEFT,CLK_WISE ,230, 0);
+//	 Step_Motor_Control(MOTOR_RIGHT,CLK_WISE ,230, 0);
+//	 osDelay(1000);
 
   }
   /* USER CODE END 5 */ 
+}
+
+/* Controller_Thread function */
+void Controller_Thread(void const * argument)
+{
+  /* USER CODE BEGIN Controller_Thread */
+  /* Infinite loop */
+  for(;;)
+  {
+	  if(VRx>=1000 && VRx<=1060) // (↑)
+	  {
+		  if(VRy < 1000)
+		  {
+			  map_speed = math_Map(VRy, 0, 999, 90, 270);
+			  re_map_speed = reverse_map(map_speed,270,90);
+			  Step_Motor_Control(MOTOR_LEFT,CLK_WISE, re_map_speed, 1);
+			  Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, re_map_speed, 1);
+			  osDelay(500);
+		  }
+		  else if(VRy > 1060) // (↓)
+		  {
+			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
+			  re_map_speed = reverse_map(map_speed,270,90);
+			  Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, re_map_speed, 1);
+			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, re_map_speed, 1);
+			  osDelay(500);
+		  }
+		  else // STOP
+		  {
+			  Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 90, 0);
+			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, 0);
+			  osDelay(500);
+		  }
+	  }
+	  else if(VRx < 1000)
+	  {
+		  if(VRy>=1000 && VRy<=1060) // (←)
+		  {
+			  map_speed = math_Map(VRx, 0, 999, 90, 270);
+			  re_map_speed = reverse_map(map_speed,270,90);
+			  Step_Motor_Control(MOTOR_LEFT, CLK_WISE, re_map_speed, 1);
+			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, re_map_speed, 1);
+			  osDelay(500);
+		  }
+		  else if(VRy > 1060) // (↙)
+		  {
+			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
+			  re_map_speed = reverse_map(map_speed,270,90);
+			  Step_Motor_Control(MOTOR_LEFT, CLK_WISE, re_map_speed, 1);
+			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, 0);
+			  osDelay(500);
+		  }
+		  else if(VRy < 1000) // (↖)
+		  {
+			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
+			  re_map_speed = reverse_map(map_speed,270,90);
+			  Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, re_map_speed, 1);
+			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, 0);
+			  osDelay(500);
+		  }
+	  }
+	  else if(VRx > 1060)
+	  {
+		  if(VRy < 1000) // (↗)
+		  {
+			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
+			  re_map_speed = reverse_map(map_speed,270,90);
+			  Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, re_map_speed, 1);
+			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, 0);
+			  osDelay(500);
+		  }
+		  else if(VRy > 1060) // (↘)
+		  {
+			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
+			  re_map_speed = reverse_map(map_speed,270,90);
+			  Step_Motor_Control(MOTOR_LEFT, CLK_WISE, 90, 0);
+			  Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, re_map_speed, 1);
+			  osDelay(500);
+		  }
+		  else // (→)
+		  {
+			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
+			  re_map_speed = reverse_map(map_speed,270,90);
+			  Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, re_map_speed, 1);
+			  Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, re_map_speed, 1);
+			  osDelay(500);
+		  }
+	  }
+  }
+  /* USER CODE END Controller_Thread */
 }
 
 /**

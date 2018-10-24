@@ -13,7 +13,7 @@
 /*
  * from_min과 from_max 사이의 value를  from_min과 from_max 사이의 값으로 맵핑하여 리턴
  * */
-uint32_t math_Map(uint32_t val, uint32_t from_min, uint32_t from_max, uint32_t to_min, uint32_t to_max);
-
+int math_Map(int val, int from_min, int from_max, int to_min, int to_max);
+int reverse_map(int map_val, int max, int min);
 
 #endif /* KHY_H_ */
