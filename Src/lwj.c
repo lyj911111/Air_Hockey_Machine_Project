@@ -30,7 +30,7 @@
 void Step_Motor_Control(const uint8_t Motor_Select, const uint8_t Direction, uint32_t Motor_Speed, uint8_t Motor_Stop)
 {
 
-	switch(Motor_Select)
+	switch(Motor_Select)		//	모터 선택 (왼쪽 또는 오른쪽)
 	{
 	case MOTOR_LEFT:
 		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, Direction);	//	시계, 시계반대 방향 제어.
