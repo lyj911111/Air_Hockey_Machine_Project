@@ -595,21 +595,21 @@ static void ADC_Thread(void const * argument)
 	while(1)
 	{
 		HAL_ADC_Start(&hadc1);
-		HAL_ADC_PollForConversion(&hadc1,500);
+		HAL_ADC_PollForConversion(&hadc1,100);
 		adc_val1= HAL_ADC_GetValue(&hadc1);
 		HAL_ADC_Stop(&hadc1);
 
 		HAL_ADC_Start(&hadc2);
-		HAL_ADC_PollForConversion(&hadc2,500);
+		HAL_ADC_PollForConversion(&hadc2,100);
 		adc_val2= HAL_ADC_GetValue(&hadc2);
 		HAL_ADC_Stop(&hadc2);
 
 		memset(uart_buf,0,sizeof(uart_buf));
-		adc_map1 = math_Map(adc_val1, 0, 4095, 90, 270);
-		map_Vx   = reverse_map(adc_map1, 270, 90);
-		adc_map2 = math_Map(adc_val2, 0, 4095, 90, 270);
-		map_Vy   = reverse_map(adc_map2, 270, 90);
-		sprintf(uart_buf,"[X: %d --> %d]   [Y: %d --> %d] \r\n", adc_map1, map_Vx, adc_map2, map_Vy);
+//		adc_map1 = Math_Mapping(adc_val1, 0, 4095, 90, 270);
+//		map_Vx   = Reverse_Mapping(adc_map1, 270, 90);
+//		adc_map2 = Math_Mapping(adc_val2, 0, 4095, 90, 270);
+//		map_Vy   = Reverse_Mapping(adc_map2, 270, 90);
+		sprintf(uart_buf,"[X: %d]   [Y: %d] \r\n", adc_val1, adc_val2);
 		HAL_UART_Transmit_IT(&huart3,uart_buf,sizeof(uart_buf));
 		osDelay(100);
 	}
@@ -621,8 +621,7 @@ void StartDefaultTask(void const * argument)
 {
 
   /* USER CODE BEGIN 5 */
-	int i = 90;			//	스텝모터 테스트.
-	int j = 160;
+
   /* Infinite loop */
   for(;;)
   {
@@ -671,7 +670,7 @@ void Controller_Thread(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  map_value_controller(map_Vx, map_Vy, 1000, 1070);
+	  Mapped_Value_Controller(adc_val1, adc_val2, 2000, 2200);
   }
   /* USER CODE END Controller_Thread */
 }
