@@ -73,9 +73,10 @@ osThreadId ControllerHandle;
 osThreadId ADCThreadHandle;
 /* Private variables ---------------------------------------------------------*/
 char uart_buf[100];
-int adc1_value, adc2_value;
-int VRx, VRy , map_speed, re_map_speed;
-int map_value_x, re_map_x, map_value_y, re_map_y;
+int adc_val1, adc_val2;
+int adc_map1, adc_map2;
+int map_Vx, map_Vy;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -595,23 +596,20 @@ static void ADC_Thread(void const * argument)
 	{
 		HAL_ADC_Start(&hadc1);
 		HAL_ADC_PollForConversion(&hadc1,500);
-		adc1_value= HAL_ADC_GetValue(&hadc1);
+		adc_val1= HAL_ADC_GetValue(&hadc1);
 		HAL_ADC_Stop(&hadc1);
 
 		HAL_ADC_Start(&hadc2);
 		HAL_ADC_PollForConversion(&hadc2,500);
-		adc2_value= HAL_ADC_GetValue(&hadc2);
+		adc_val2= HAL_ADC_GetValue(&hadc2);
 		HAL_ADC_Stop(&hadc2);
 
 		memset(uart_buf,0,sizeof(uart_buf));
-		VRx = math_Map(adc1_value, 0, 4095, 0, 2047);
-		VRy = math_Map(adc2_value, 0, 4095, 0, 2047);
-		osDelay(50);
-		map_value_x = math_Map(VRx, 0, 2047, 90, 270); // mapping test
-		re_map_x = reverse_map(map_value_x,270,90); //reverse map value
-		map_value_y = math_Map(VRy, 0, 2047, 90, 270); // mapping test
-		re_map_y = reverse_map(map_value_y,270,90); //reverse map value
-		sprintf(uart_buf,"[VRx: %d -> %d] [VRy: %d -> %d] \r\n", VRx, re_map_x, VRy, re_map_y);
+		adc_map1 = math_Map(adc_val1, 0, 4095, 90, 270);
+		map_Vx   = reverse_map(adc_map1, 270, 90);
+		adc_map2 = math_Map(adc_val2, 0, 4095, 90, 270);
+		map_Vy   = reverse_map(adc_map2, 270, 90);
+		sprintf(uart_buf,"[X: %d --> %d]   [Y: %d --> %d] \r\n", adc_map1, map_Vx, adc_map2, map_Vy);
 		HAL_UART_Transmit_IT(&huart3,uart_buf,sizeof(uart_buf));
 		osDelay(100);
 	}
@@ -673,85 +671,7 @@ void Controller_Thread(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  if(VRx>=1000 && VRx<=1060) // (¡è)
-	  {
-		  if(VRy < 1000)
-		  {
-			  map_speed = math_Map(VRy, 0, 999, 90, 270);
-			  re_map_speed = reverse_map(map_speed,270,90);
-			  Step_Motor_Control(MOTOR_LEFT,CLK_WISE, re_map_speed, 1);
-			  Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, re_map_speed, 1);
-			  osDelay(500);
-		  }
-		  else if(VRy > 1060) // (¡é)
-		  {
-			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
-			  re_map_speed = reverse_map(map_speed,270,90);
-			  Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, re_map_speed, 1);
-			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, re_map_speed, 1);
-			  osDelay(500);
-		  }
-		  else // STOP
-		  {
-			  Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 90, 0);
-			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, 0);
-			  osDelay(500);
-		  }
-	  }
-	  else if(VRx < 1000)
-	  {
-		  if(VRy>=1000 && VRy<=1060) // (¡ç)
-		  {
-			  map_speed = math_Map(VRx, 0, 999, 90, 270);
-			  re_map_speed = reverse_map(map_speed,270,90);
-			  Step_Motor_Control(MOTOR_LEFT, CLK_WISE, re_map_speed, 1);
-			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, re_map_speed, 1);
-			  osDelay(500);
-		  }
-		  else if(VRy > 1060) // (¢×)
-		  {
-			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
-			  re_map_speed = reverse_map(map_speed,270,90);
-			  Step_Motor_Control(MOTOR_LEFT, CLK_WISE, re_map_speed, 1);
-			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, 0);
-			  osDelay(500);
-		  }
-		  else if(VRy < 1000) // (¢Ø)
-		  {
-			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
-			  re_map_speed = reverse_map(map_speed,270,90);
-			  Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, re_map_speed, 1);
-			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, 0);
-			  osDelay(500);
-		  }
-	  }
-	  else if(VRx > 1060)
-	  {
-		  if(VRy < 1000) // (¢Ö)
-		  {
-			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
-			  re_map_speed = reverse_map(map_speed,270,90);
-			  Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, re_map_speed, 1);
-			  Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, 0);
-			  osDelay(500);
-		  }
-		  else if(VRy > 1060) // (¢Ù)
-		  {
-			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
-			  re_map_speed = reverse_map(map_speed,270,90);
-			  Step_Motor_Control(MOTOR_LEFT, CLK_WISE, 90, 0);
-			  Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, re_map_speed, 1);
-			  osDelay(500);
-		  }
-		  else // (¡æ)
-		  {
-			  map_speed = math_Map(VRy, 1061, 2045, 90, 270);
-			  re_map_speed = reverse_map(map_speed,270,90);
-			  Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, re_map_speed, 1);
-			  Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, re_map_speed, 1);
-			  osDelay(500);
-		  }
-	  }
+	  map_value_controller(map_Vx, map_Vy, 1000, 1070);
   }
   /* USER CODE END Controller_Thread */
 }
