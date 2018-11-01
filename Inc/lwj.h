@@ -22,6 +22,16 @@ TIM_HandleTypeDef htim1;	//	스텝모터 제어 타이머
 #define MOVE_OFF		0	//	모터 회전 정지
 #define	MOVE_ON			1	//	모터 회전 가동
 
+void Step_GoingRight(void);
+void Step_GoingLeft(void);
+void Step_GoingDown(void);
+void Step_GoingUp(void);
+void Step_GoingRight_Up(void);
+void Step_GoingLeft_Up(void);
+void Step_GoingRight_Down(void);
+void Step_GoingLeft_Down(void);
+
 void Step_Motor_Control(const uint8_t Motor_Select, const uint8_t Direction, uint32_t Motor_Speed, uint8_t Motor_Stop);
+void Step_Generate_Pulse(uint32_t Number);
 
 #endif /* LWJ_H_ */
