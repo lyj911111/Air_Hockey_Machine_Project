@@ -52,6 +52,10 @@
 #define User_Button_Pin GPIO_PIN_13
 #define User_Button_GPIO_Port GPIOC
 #define User_Button_EXTI_IRQn EXTI15_10_IRQn
+#define left_step_Pin GPIO_PIN_9
+#define left_step_GPIO_Port GPIOE
+#define right_step_Pin GPIO_PIN_11
+#define right_step_GPIO_Port GPIOE
 #define Red_LED_Pin GPIO_PIN_14
 #define Red_LED_GPIO_Port GPIOB
 #define Blue_LED_Pin GPIO_PIN_7

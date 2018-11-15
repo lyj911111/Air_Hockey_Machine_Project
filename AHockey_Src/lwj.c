@@ -9,35 +9,9 @@
 
 #include "../AHockey_Inc/khy.h"
 
-extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim1;
 int cnt = 0;
 
-
-void Step_Motor_Auto(const uint8_t Motor_Select, const uint8_t Direction, uint32_t Pulse_Limit)
-{
-
-	switch(Motor_Select)		//	모터 선택 (왼쪽 또는 오른쪽)
-	{
-	case MOTOR_LEFT:
-		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, Direction);	//	시계, 시계반대 방향 제어.
-
-
-		break;
-
-	case MOTOR_RIGHT:
-		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3, Direction);
-
-		break;
-	}
-}
-
-
-
-void Step_Generate_Pulse(uint32_t Number)
-{
-	cnt = Number;
-	HAL_TIM_Base_Start_IT(&htim3);
-}
 
 //////////////////////////////////////////////////////////////
 /*
@@ -135,7 +109,6 @@ void Step_GoingLeft_Down(void)
 
 void Step_Motor_Control(const uint8_t Motor_Select, const uint8_t Direction, uint32_t Motor_Speed, uint8_t Motor_Stop)
 {
-
 	switch(Motor_Select)		//	모터 선택 (왼쪽 또는 오른쪽)
 	{
 	case MOTOR_LEFT:
@@ -159,6 +132,38 @@ void Step_Motor_Control(const uint8_t Motor_Select, const uint8_t Direction, uin
 		break;
 	}
 }
+
+
+uint16_t pulse_count1=0;
+uint16_t pulse_count2=0;
+uint8_t step_flag=1;
+
+uint8_t Step_pulse(uint16_t pulse_num,uint16_t motor_select,uint16_t direction)
+{
+  if(pulse_count1 == 0 && motor_select == MOTOR_LEFT){
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, direction);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_9, 0);
+    pulse_count1 = pulse_num*2;
+  }
+  else if(pulse_count2 == 0 && motor_select == MOTOR_RIGHT){
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, direction);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, 0);
+    pulse_count2 = pulse_num*2;
+  }
+  else
+    return 1;
+  return 0;
+}
+
+void pulse_start()
+{
+  if(step_flag == 1){
+    HAL_TIM_Base_Start_IT(&htim1);
+    step_flag = 0;
+  }
+}
+
+
 
 //////////////////////////////////////////////////////////////
 /*
