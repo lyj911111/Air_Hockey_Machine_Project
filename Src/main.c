@@ -39,10 +39,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_hal.h"
-#include "lwj.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "lwj.h"
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -140,13 +141,18 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   int dir =0;
+  char str[50];
   while (1)
   {
-    Step_pulse(200,MOTOR_RIGHT,dir);
-    if(!Step_pulse(200,MOTOR_LEFT,!dir)){
-      pulse_start();
-      dir = !dir;
-    }
+	  if(step_flag == 1){
+		Step_pulse(500,MOTOR_RIGHT,dir);
+		if(!Step_pulse(500,MOTOR_LEFT,dir)){
+		  pulse_start();
+		  dir = !dir;
+		  HAL_Delay(500);
+		}
+	  }
+
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
@@ -305,7 +311,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 500;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 90;
+  htim1.Init.Period = 80;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
@@ -468,15 +474,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
-
-/**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM7 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
 
 /**
   * @brief  This function is executed in case of error occurrence.

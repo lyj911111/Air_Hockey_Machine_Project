@@ -59,7 +59,6 @@ void SysTick_Handler(void);
 void TIM1_UP_TIM10_IRQHandler(void);
 void USART3_IRQHandler(void);
 void EXTI15_10_IRQHandler(void);
-void TIM7_IRQHandler(void);
 
 #ifdef __cplusplus
 }

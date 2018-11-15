@@ -146,7 +146,7 @@ uint8_t Step_pulse(uint16_t pulse_num,uint16_t motor_select,uint16_t direction)
     pulse_count1 = pulse_num*2;
   }
   else if(pulse_count2 == 0 && motor_select == MOTOR_RIGHT){
-    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, direction);
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3, direction);
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, 0);
     pulse_count2 = pulse_num*2;
   }
