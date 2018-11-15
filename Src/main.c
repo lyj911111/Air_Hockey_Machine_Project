@@ -39,6 +39,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_hal.h"
+#include "lwj.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -73,9 +74,9 @@ static void MX_ADC2_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-extern pulse_count1;
-extern pulse_count2;
-extern step_flag;
+extern uint16_t pulse_count1;
+extern uint16_t pulse_count2;
+extern uint8_t step_flag;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   UNUSED(htim);
@@ -138,9 +139,14 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  int dir =0;
   while (1)
   {
-
+    Step_pulse(200,MOTOR_RIGHT,dir);
+    if(!Step_pulse(200,MOTOR_LEFT,!dir)){
+      pulse_start();
+      dir = !dir;
+    }
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
@@ -471,18 +477,6 @@ static void MX_GPIO_Init(void)
   * @param  htim : TIM handle
   * @retval None
   */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* USER CODE BEGIN Callback 0 */
-
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM7) {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
-
-  /* USER CODE END Callback 1 */
-}
 
 /**
   * @brief  This function is executed in case of error occurrence.
