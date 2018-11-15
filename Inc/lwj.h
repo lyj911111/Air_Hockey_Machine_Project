@@ -30,6 +30,7 @@ void Step_GoingRight_Up(void);
 void Step_GoingLeft_Up(void);
 void Step_GoingRight_Down(void);
 void Step_GoingLeft_Down(void);
+void Step_Stop(void);
 
 void Step_Motor_Control(const uint8_t Motor_Select, const uint8_t Direction, uint32_t Motor_Speed, uint8_t Motor_Stop);
 void Step_Generate_Pulse(uint32_t Number);

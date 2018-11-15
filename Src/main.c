@@ -145,9 +145,9 @@ int main(void)
   MX_ADC1_Init();
   MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);		//	스텝모터 타이머 1, 채널1,2 시작
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
   HAL_TIM_Base_Start_IT(&htim3);				//	타이머 인터럽트 시작.
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -351,7 +351,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 1000;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 450;
+  htim1.Init.Period = 90;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
@@ -367,7 +367,7 @@ static void MX_TIM1_Init(void)
   }
 
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 225;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
@@ -383,7 +383,6 @@ static void MX_TIM1_Init(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-  sConfigOC.Pulse = 0;
   if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
@@ -594,6 +593,7 @@ static void ADC_Thread(void const * argument)
 {
 	while(1)
 	{
+		/*
 		HAL_ADC_Start(&hadc1);
 		HAL_ADC_PollForConversion(&hadc1,100);
 		adc_val1= HAL_ADC_GetValue(&hadc1);
@@ -611,7 +611,7 @@ static void ADC_Thread(void const * argument)
 //		map_Vy   = Reverse_Mapping(adc_map2, 270, 90);
 		sprintf(uart_buf,"[X: %d]   [Y: %d] \r\n", adc_val1, adc_val2);
 		HAL_UART_Transmit_IT(&huart3,uart_buf,sizeof(uart_buf));
-		osDelay(100);
+		osDelay(100);*/
 	}
 }
 /* USER CODE END 4 */
@@ -625,6 +625,15 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+	  Step_GoingLeft();
+	  osDelay(1000);
+	  Step_Stop();
+	  osDelay(1500);
+
+	  Step_GoingRight();
+	  osDelay(1000);
+	  Step_Stop();
+	  osDelay(1500);
 
 	  //	스텝모터 테스트중.
 //	 Step_Motor_Control(MOTOR_LEFT,CNT_CLK_WISE ,230, 1);
@@ -670,7 +679,7 @@ void Controller_Thread(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  Mapped_Value_Controller(adc_val1, adc_val2, 2000, 2200);
+	  //Mapped_Value_Controller(adc_val1, adc_val2, 2000, 2200);
   }
   /* USER CODE END Controller_Thread */
 }

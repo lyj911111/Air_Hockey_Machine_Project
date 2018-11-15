@@ -43,6 +43,7 @@ void Step_Generate_Pulse(uint32_t Number)
  *  스텝모터 쉽게 통제하는 함수.
  *  함수 설명 : 좌우상하를 쉽게 움직일 수 있도록 함.
  *
+ *	Step_Stop()            : 멈춤.
  *  Step_GoingRight()      : 오른쪽으로 이동.(→)
  *  Step_GoingLeft()       : 왼쪽로 이동.(←)
  *  Step_GoingDown()       : 아래로 이동.(↓)
@@ -55,52 +56,58 @@ void Step_Generate_Pulse(uint32_t Number)
  */
 //////////////////////////////////////////////////////////////
 
+void Step_Stop(void)
+{
+	Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 80, MOVE_OFF);
+	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 80, MOVE_OFF);
+}
+
 void Step_GoingRight(void)
 {
-	Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 90, MOVE_ON);
-	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 90, MOVE_ON);
+	Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 85, MOVE_ON);
+	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 85, MOVE_ON);
 }
 
 void Step_GoingLeft(void)
 {
-	Step_Motor_Control(MOTOR_LEFT, CLK_WISE, 90, MOVE_ON);
-	Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, MOVE_ON);
+	Step_Motor_Control(MOTOR_LEFT, CLK_WISE, 85, MOVE_ON);
+	Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 85, MOVE_ON);
 }
 
 void Step_GoingDown(void)
 {
-	Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 90, MOVE_ON);
-	Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, MOVE_ON);
+	Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 85, MOVE_ON);
+	Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 85, MOVE_ON);
 }
 
 void Step_GoingUp(void)
 {
-	Step_Motor_Control(MOTOR_LEFT, CLK_WISE, 90, MOVE_ON);
-	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 90, MOVE_ON);
+	Step_Motor_Control(MOTOR_LEFT, CLK_WISE, 85, MOVE_ON);
+	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 85, MOVE_ON);
 }
 
 void Step_GoingRight_Up(void)
 {
-	Step_Motor_Control(MOTOR_LEFT, CLK_WISE, 90, MOVE_OFF);
-	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 90, MOVE_ON);
+	Step_Motor_Control(MOTOR_LEFT, CLK_WISE, 85, MOVE_OFF);
+	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 85, MOVE_ON);
 }
 
 void Step_GoingLeft_Up(void)
 {
-	Step_Motor_Control(MOTOR_LEFT, CLK_WISE, 90, MOVE_ON);
-	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 90, MOVE_OFF);
+	Step_Motor_Control(MOTOR_LEFT, CLK_WISE, 85, MOVE_ON);
+	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 85, MOVE_OFF);
 }
 
 void Step_GoingRight_Down(void)
 {
-	Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 90, MOVE_ON);
-	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 90, MOVE_OFF);
+	Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 85, MOVE_ON);
+	Step_Motor_Control(MOTOR_RIGHT, CNT_CLK_WISE, 85, MOVE_OFF);
 }
 
 void Step_GoingLeft_Down(void)
 {
-	Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 90, MOVE_OFF);
-	Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 90, MOVE_ON);
+	Step_Motor_Control(MOTOR_LEFT, CNT_CLK_WISE, 85, MOVE_OFF);
+	Step_Motor_Control(MOTOR_RIGHT, CLK_WISE, 85, MOVE_ON);
 }
 
 //////////////////////////////////////////////////////////////
