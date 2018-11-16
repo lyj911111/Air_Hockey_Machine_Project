@@ -133,17 +133,28 @@ void Step_Motor_Control(const uint8_t Motor_Select, const uint8_t Direction, uin
 	}
 }
 
+//////////////////////////////////////////////////////////////
+/*
+ *  입력한 펄스값 만큼 움직이는 스텝모터
+ *  함수사용법: [펄스의 갯수]/[모터선택]/[모터방향]
+ *
+ *  	펄스 움직임 정보.
+ *
+ *  중간지점으로 부터 양 끝단까지 700번 펄스.
+ *  처음지점부터 끝지점까지 1400번 펄스.
+ */
+//////////////////////////////////////////////////////////////
 
-uint16_t pulse_count1=0;
-uint16_t pulse_count2=0;
-uint8_t step_flag=1;
+uint16_t pulse_count1 = 0;
+uint16_t pulse_count2 = 0;
+uint8_t step_flag = 1;
 
 uint8_t Step_pulse(uint16_t pulse_num,uint16_t motor_select,uint16_t direction)
 {
-  if(pulse_count1 == 0 && motor_select == MOTOR_LEFT){
-    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, direction);
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_9, 0);
-    pulse_count1 = pulse_num*2;
+  if(pulse_count1 == 0 && motor_select == MOTOR_LEFT){		//	모터 선택 (왼쪽)
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, direction);		//	모터 방향 선택
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_9, 0);				//	펄스파형 발생하는 포트 (타이머 카운터 1 이용, main의 __weak함수 타이머 인터럽트)
+    pulse_count1 = pulse_num*2;								//	1 주기당 1번의  펄스를 만들기 위함.
   }
   else if(pulse_count2 == 0 && motor_select == MOTOR_RIGHT){
     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3, direction);
@@ -151,8 +162,8 @@ uint8_t Step_pulse(uint16_t pulse_num,uint16_t motor_select,uint16_t direction)
     pulse_count2 = pulse_num*2;
   }
   else
-    return 1;
-  return 0;
+    return 1;	// 불안정 종료.
+  return 0;		// 성공적으로 함수가 완료될 때
 }
 
 void pulse_start()
