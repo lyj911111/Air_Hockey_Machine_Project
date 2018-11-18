@@ -28,7 +28,7 @@ extern uint8_t step_flag;
 uint8_t Step_Rx_Data(uint32_t x_data )	//	x좌표 0~20 값의 데이터를 받음.
 {
 	const static uint32_t step_move = 70;
-	int16_t x_rel = 0;						//	x값의 상대좌표
+	int32_t x_rel = 0;						//	x값의 상대좌표
 	uint8_t dir = 0;
 
 	if(x_data > 20 || x_data < 0 || step_flag != 1)		//	비정상 값이 나올 시, 스텝모터가 실행되지 않을 때 실행 취소.
