@@ -44,6 +44,7 @@
 #include "lwj.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -78,26 +79,60 @@ static void MX_ADC2_Init(void);
 extern uint16_t pulse_count1;
 extern uint16_t pulse_count2;
 extern uint8_t step_flag;
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   UNUSED(htim);
 
-  if(htim->Instance==TIM1){
-    if(pulse_count1 != 0){
-      pulse_count1--;
-      HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_9);
+  if(htim->Instance==TIM1)						//	타이머 인터럽트 1으로 선택.
+  {
+    if(pulse_count1 != 0)						//	펄스값이 0이 아닐 경우에만 작동.
+    {
+      pulse_count1--;							//	입력된 펄스 갯수를 다운 카운트. (Pulse_count1 = 입력펄스 * 2)
+      HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_9);	//	펄스파형 발생 (토글) 왼쪽 스텝 모터
     }
-    if(pulse_count2 != 0){
+
+    if(pulse_count2 != 0)						//	오른쪽 스텝 모터
+    {
       pulse_count2--;
       HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_11);
     }
-    if((pulse_count1 == 0) && (pulse_count2 == 0)){
+
+    if((pulse_count1 == 0) && (pulse_count2 == 0))	//	두 모터의 입력된 펄스값이 없을 경우에 타이머 카운터 작동 멈춤.
+    {
       HAL_TIM_Base_Stop_IT(htim);
-      step_flag = 1;
+      step_flag = 0;
     }
   }
 
 }
+
+uint8_t Rx_data[3];
+uint8_t str[7];
+uint8_t str1[13];
+uint32_t step_level;
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(huart);
+
+  if(huart->Instance == USART3)
+  {
+	  HAL_UART_Receive_IT(&huart3, Rx_data, 3);
+	  sprintf(str1, "str1:%d,%d,%d\r\n", Rx_data[0],Rx_data[1],Rx_data[2]);		//	입력된 값의 아스키코드값 확인용.
+	  HAL_UART_Transmit(&huart3, str1, strlen(str1), 10);
+
+	  step_level = (atoi(&Rx_data[0]));						//	수신한 값을 정수형으로 변환 (스텝모터 통제 값으로 전송하기 위해) 0~20 까지.
+	  sprintf(str, "str:%d\r\n", step_level);				//	값을 확인하기 위함.
+	  HAL_UART_Transmit(&huart3, str, sizeof(str), 10);		//	인터럽트 값 시리얼 통신 확인용 값 출력.
+
+	  step_flag = 1;
+  }
+
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -136,23 +171,66 @@ int main(void)
   MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
 
+  HAL_UART_Receive_IT(&huart3, Rx_data, 3);		//	UART Receive 인터럽트 실행. (3byte 가 찰 때 인터럽트)
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int dir =0;
-  char str[50];
+  extern int dir;
+  int pulse = 0;
+  extern int temp;
+
+  char buf[7];
+  char str[7];
+
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_9, 0);
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, 0);
+  step_flag = 0;
+
+  /*	초기화 하기 전에 주의사항
+   *
+   * 	하키채를 수동으로 직접 왼쪽 끝까지 쭉 밀어서  초기 원점을 잡아준다.
+   * 	그리고나서 다음 아래 초기화 함수가 실행 되었을 때, 하키채가 가운데에 위치해야 한다.
+   *
+   * */
+
+  Init_Step();		//	하키채 초기화 함수.
+
   while (1)
   {
-	  if(step_flag == 1){
-		Step_pulse(500,MOTOR_RIGHT,dir);
-		if(!Step_pulse(500,MOTOR_LEFT,dir)){
+/*
+	  if(step_flag == 0)
+	  {
+		Step_pulse(500, MOTOR_RIGHT, dir);
+		if(!Step_pulse(500,MOTOR_LEFT,dir))	//	0이 아닐 경우에 실행.
+		{
 		  pulse_start();
 		  dir = !dir;
-		  HAL_Delay(500);
+		  HAL_Delay(1000);
 		}
-	  }
+	  }*/
 
+	  /*
+	  if(step_flag == 1)
+	  {
+		  if(Rx_data[2] == 68)	//	left
+		  {
+			  dir = CLK_WISE;
+
+		  }
+		  else if(Rx_data[2] == 67)	//	Right
+		  {
+			  dir = CNT_CLK_WISE;
+
+		  }
+		  Step_pulse(temp, MOTOR_LEFT, dir);
+		  Step_pulse(temp, MOTOR_RIGHT, dir);
+		  pulse_start();
+	  }*/
+
+	  Step_Rx_Data(step_level);
+	  Step_Manual_Control();
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */

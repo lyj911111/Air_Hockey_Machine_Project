@@ -34,7 +34,9 @@ void Step_Stop(void);
 
 void Step_Motor_Control(const uint8_t Motor_Select, const uint8_t Direction, uint32_t Motor_Speed, uint8_t Motor_Stop);
 void Step_Generate_Pulse(uint32_t Number);
-
+void Step_Manual_Control(void);
+void Init_Step(void);
+uint8_t Step_Rx_Data(uint32_t x_data );
 
 uint8_t Step_pulse(uint16_t pulse_num,uint16_t motor_select,uint16_t direction);
 void pulse_start();
