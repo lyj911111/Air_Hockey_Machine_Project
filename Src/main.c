@@ -77,6 +77,7 @@ static void MX_ADC2_Init(void);
 extern uint16_t pulse_count1;
 extern uint16_t pulse_count2;
 extern uint8_t step_flag;
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   UNUSED(htim);
@@ -142,10 +143,12 @@ int main(void)
   int dir =0;
   while (1)
   {
-    Step_pulse(200,MOTOR_RIGHT,dir);
-    if(!Step_pulse(200,MOTOR_LEFT,!dir)){
-      pulse_start();
-      dir = !dir;
+    if(step_flag == 1){
+      Step_pulse(200,MOTOR_RIGHT,dir);
+      if(!Step_pulse(200,MOTOR_LEFT,!dir)){
+        pulse_start();
+        dir = !dir;
+      }
     }
   /* USER CODE END WHILE */
 
