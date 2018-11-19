@@ -199,6 +199,7 @@ int main(void)
 
   while (1)
   {
+
 /*
 	  if(step_flag == 0)
 	  {
@@ -231,6 +232,7 @@ int main(void)
 
 	  Step_Rx_Data(step_level);
 	  Step_Manual_Control();
+
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
