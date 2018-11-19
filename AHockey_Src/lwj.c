@@ -6,12 +6,63 @@
  */
 
 #include "../AHockey_Inc/lwj.h"
-
 #include "../AHockey_Inc/khy.h"
+#include <stdlib.h>
+
 
 extern TIM_HandleTypeDef htim1;
 int cnt = 0;
 
+//////////////////////////////////////////////////////////////
+/*
+ *  함수 설명 : x좌표값 0~20 값을 받아 해당 좌표로 이동시킴.
+ *
+ *
+ */
+//////////////////////////////////////////////////////////////
+
+uint32_t pulse_num;		//	0~1400
+uint32_t x_coord = 10;		//	0~20
+extern uint8_t step_flag;
+
+uint8_t Step_Rx_Data(uint32_t x_data )	//	x좌표 0~20 값의 데이터를 받음.
+{
+	const static uint32_t step_move = 70;
+	int32_t x_rel = 0;						//	x값의 상대좌표
+	uint8_t dir = 0;
+
+	if(x_data > 20 || x_data < 0 || step_flag != 1)		//	비정상 값이 나올 시, 스텝모터가 실행되지 않을 때 실행 취소.
+		return 0;
+
+	x_rel = (x_coord - x_data);			//	현재좌표 - 이동좌표 = 상대좌표
+	x_coord = x_data;
+
+	if(x_rel > 0)	//	방향을 왼쪽으로
+	{
+		dir = CLK_WISE;
+	}
+	else if(x_rel < 0)	//	방향을 오른쪽으로
+	{
+		dir = CNT_CLK_WISE;
+	}
+
+	step_flag = 1;
+	Step_pulse( abs(x_rel*step_move) , MOTOR_LEFT, dir);
+	Step_pulse( abs(x_rel*step_move) , MOTOR_RIGHT, dir);
+	pulse_start();
+
+	return 1;
+}
+
+extern uint8_t step_flag;
+
+void Init_Step(void)	//	초기 수동으로 왼쪽 끝으로 밀어준다. (가운데로 이동하여 )
+{
+	step_flag = 1;
+	Step_pulse(700, MOTOR_LEFT, CNT_CLK_WISE);
+	Step_pulse(700, MOTOR_RIGHT, CNT_CLK_WISE);
+	pulse_start();
+}
 
 //////////////////////////////////////////////////////////////
 /*
@@ -133,26 +184,37 @@ void Step_Motor_Control(const uint8_t Motor_Select, const uint8_t Direction, uin
 	}
 }
 
+//////////////////////////////////////////////////////////////
+/*
+ *  입력한 펄스값 만큼 움직이는 스텝모터
+ *  함수사용법: [펄스의 갯수]/[모터선택]/[모터방향]
+ *
+ *  	펄스 움직임 정보.
+ *
+ *  중간지점으로 부터 양 끝단까지 700번 펄스.
+ *  처음지점부터 끝지점까지 1400번 펄스.
+ */
+//////////////////////////////////////////////////////////////
 
-uint16_t pulse_count1=0;
-uint16_t pulse_count2=0;
-uint8_t step_flag=1;
+uint16_t pulse_count1 = 0;
+uint16_t pulse_count2 = 0;
+uint8_t step_flag = 1;
 
 uint8_t Step_pulse(uint16_t pulse_num,uint16_t motor_select,uint16_t direction)
 {
-  if(pulse_count1 == 0 && motor_select == MOTOR_LEFT){
-    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, direction);
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_9, 0);
-    pulse_count1 = pulse_num*2;
+  if(pulse_count1 == 0 && motor_select == MOTOR_LEFT){			//	모터 선택 (왼쪽)
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, direction);			//	모터 방향 선택
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_9, 0);					//	펄스파형 발생하는 포트 (타이머 카운터 1 이용, main의 __weak함수 타이머 인터럽트)
+    pulse_count1 = pulse_num * 2;								//	1 주기당 1번의  펄스를 만들기 위함.
   }
   else if(pulse_count2 == 0 && motor_select == MOTOR_RIGHT){
-    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_2, direction);
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3, direction);
     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, 0);
-    pulse_count2 = pulse_num*2;
+    pulse_count2 = pulse_num * 2;
   }
   else
-    return 1;
-  return 0;
+    return 1;	// 불안정 종료.
+  return 0;		// 성공적으로 함수가 완료될 때
 }
 
 void pulse_start()
@@ -163,7 +225,41 @@ void pulse_start()
   }
 }
 
+//////////////////////////////////////////////////////////////
+/*
+ *  Step모터 수동 조작 (펄스 테스트 용)
+ *  함수 사용법 : [←] 버튼과 [→] 버튼을 이용해서 x좌표를 수동으로 조작함.
+ *
+ *	dir : 좌우 방향을 선택함.
+ *	temp : 최소 움직임 단위 선택.
+ */
+//////////////////////////////////////////////////////////////
 
+int dir = 0;	//	방향 선택.
+int temp = 70;	//	펄스값 선택 (움직임 단위 선택)
+extern uint8_t Rx_data[3];
+
+void Step_Manual_Control(void)
+{
+	  if(step_flag == 1)
+	  {
+		  if(Rx_data[0] == 27 && Rx_data[1] == 91)
+		  {
+			  if(Rx_data[2] == 68)	//	left
+			  {
+				  dir = CLK_WISE;
+			  }
+			  else if(Rx_data[2] == 67)	//	Right
+			  {
+				  dir = CNT_CLK_WISE;
+			  }
+			  Step_pulse(temp, MOTOR_LEFT, dir);
+			  Step_pulse(temp, MOTOR_RIGHT, dir);
+			  pulse_start();
+		  }
+
+	  }
+}
 
 //////////////////////////////////////////////////////////////
 /*
